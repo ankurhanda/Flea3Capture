@@ -16,7 +16,16 @@ ENDIF()
 FIND_PACKAGE(GLEW REQUIRED)
 FIND_PACKAGE(Pangolin REQUIRED)
 FIND_PACKAGE(CVD REQUIRED)
+FIND_PACKAGE(CUDA REQUIRED)
 
+
+FIND_PATH(CUDA_CUT_INCLUDE_DIR
+   cutil.h
+   PATHS ${CUDA_SDK_SEARCH_PATH}
+   PATH_SUFFIXES "common/inc"
+   DOC "Location of cutil.h"
+   NO_DEFAULT_PATH
+)
 
 INCLUDE_DIRECTORIES(
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -28,12 +37,15 @@ INCLUDE_DIRECTORIES(
   ${CVD_INCLUDE_DIR}
   ${Pangolin_INCLUDE_DIR}
   /usr/include/flycapture/
+  ${CUDA_CUT_INCLUDE_DIR}
+  ${CUDA_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(
   /usr/local/lib
   /usr/local/lib64
   /usr/lib/
+  ${CUDA_SDK_ROOT_DIR}/common/lib
 )
 
 LINK_LIBRARIES(  
@@ -55,6 +67,10 @@ IF(OPENMP_FOUND)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 ENDIF()
 
-ADD_EXECUTABLE(flycapture2test
-               ./src/main_flycapture2_test.cpp)
+SET(CUDA_NVCC_FLAGS  "-arch=sm_30"  "--use_fast_math" "-O3" "-lineinfo")
+
+CUDA_ADD_EXECUTABLE(flycapture2test
+                   ./src/grabber/flea3_grabber.h
+                   ./src/grabber/flea3_grabber.cpp
+                   ./src/main_flycapture2_test.cpp)
 
